@@ -1,0 +1,34 @@
+ServerSocket: /tmp/imunify/mq.sock
+DataPath: mem
+
+Subscribers:
+  - Name: rt-aibolit
+    Socket: /tmp/imunify/rt-aibolit.sock
+    BatchSize: 100
+  - Name: agent
+    Socket: /tmp/imunify/agent.sock
+    BatchSize: 10
+  - Name: iptables-ips
+    Socket: /tmp/imunify/iptables-ips.sock
+  - Name: sharedmem-ips
+    Socket: /tmp/imunify/pam-ips.sock
+
+Topics:
+  - Name: filescan
+    AckRequired: True
+    AckRetry: 5m
+    Dedupe: True
+    Priorities: 2
+    Expire: True
+    Subscribers:
+      - rt-aibolit
+  - Name: ips
+    AckRequired: True
+    AckRetry: 3m
+    Dedupe: False
+    Priorities: 1
+    Expire: True
+    Subscribers:
+      - iptables-ips
+      - sharedmem-ips
+

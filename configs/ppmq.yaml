@@ -1,0 +1,48 @@
+# ServerSocket is ppMQ socket, used by message producers to send messages
+# and by subscribers to send ACK & RECONNECT command
+ServerSocket: /tmp/imunify/mq.sock
+# Location of data store for ppMQ
+DataPath: /tmp/imunify/store
+
+# List of known subscribers
+Subscribers:
+  # name of the subscriber
+  - Name: rt-aibolit
+    # location of unix socket used by ppMQ to send messages to subscriber.
+    # If subscriber process is not running, we expect it to be configured to start by systemd on socket write
+    Socket: /tmp/imunify/rt-aibolit.sock
+    # Number of messages to forward to subscriber at once
+    BatchSize: 100
+  - Name: agent
+    Socket: /tmp/imunify/agent.sock
+    BatchSize: 10
+  - Name: iptables-ips
+    Socket: /tmp/imunify/iptables-ips.sock
+  - Name: sharedmem-ips
+    Socket: /tmp/imunify/pam-ips.sock
+
+# List of topics
+Topics:
+  # Topic name
+  - Name: filescan
+    # 0 - ack doesn't expire. Otherwise use a number with  "s", "m", "h" to specify how long after message has been sent
+    # we should retry re-sending it if not acknowledged. Like 5m - 5 minutes after sending.
+    AckRetry: 0
+    # if True - dedupe messages (Message Key required), no dedupe otherwise
+    Dedupe: True
+    # Number of priorities in the Topic for the messages. 2 would mean two priorities (0 and 1)
+    Priorities: 2
+    # If true message can expire (if Expire field is set), and not be delivered to subscriber
+    Expire: True
+    # List of subscribers
+    Subscribers:
+      - rt-aibolit
+  - Name: ips
+    AckRetry: 0
+    Dedupe: False
+    Priorities: 1
+    Expire: True
+    Subscribers:
+      - iptables-ips
+      - sharedmem-ips
+
